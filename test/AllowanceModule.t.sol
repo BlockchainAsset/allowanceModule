@@ -38,7 +38,9 @@ contract AllowanceTest is Test {
     ERC20 public erc20;
     uint256 salt; // Note: This is not suitable for production, just for testing.
 
-    event allowanceExecuted(address _initiator, address indexed _safe, address indexed _token, address indexed _beneficiary, uint256 _amount);
+    event allowanceExecuted(
+        address _initiator, address indexed _safe, address indexed _token, address indexed _beneficiary, uint256 _amount
+    );
 
     function setUp() public {
         // Creating wallets for testing purposes. (Address in ascending order).
@@ -54,7 +56,9 @@ contract AllowanceTest is Test {
         // Setting up safe wallet.
         singleton = address(new SafeL2());
         safeProxyFactory = new SafeProxyFactory();
-        bytes memory setupData = abi.encodeWithSelector(Safe.setup.selector, owners, threshold, address(0), "0x", address(0), address(0), 0, payable(address(0)));
+        bytes memory setupData = abi.encodeWithSelector(
+            Safe.setup.selector, owners, threshold, address(0), "0x", address(0), address(0), 0, payable(address(0))
+        );
 
         salt++;
         safe = SafeL2(payable(safeProxyFactory.createProxyWithNonce(singleton, setupData, salt)));
@@ -68,7 +72,9 @@ contract AllowanceTest is Test {
         // Creating Tx Data and Hash to enable module.
         uint256 _safeNonce = safe.nonce();
         bytes memory enableModuleData = abi.encodeWithSignature("enableModule(address)", address(allowanceModule));
-        bytes32 enableModuleTxHash = safe.getTransactionHash(address(safe), 0, enableModuleData, Enum.Operation.Call, 0, 0, 0, address(0), address(0), _safeNonce);
+        bytes32 enableModuleTxHash = safe.getTransactionHash(
+            address(safe), 0, enableModuleData, Enum.Operation.Call, 0, 0, 0, address(0), address(0), _safeNonce
+        );
         vm.stopPrank();
 
         // Creating signed content for safe wallet.
@@ -77,22 +83,13 @@ contract AllowanceTest is Test {
         {
             (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(hotWalletPk, enableModuleTxHash);
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(coldWalletPk, enableModuleTxHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Tx to enable module.
         bool status = safe.execTransaction(
-                        address(safe),
-                        0,
-                        enableModuleData,
-                        Enum.Operation.Call,
-                        0,
-                        0,
-                        0,
-                        address(0),
-                        payable(address(0)),
-                        sig
-                        );
+            address(safe), 0, enableModuleData, Enum.Operation.Call, 0, 0, 0, address(0), payable(address(0)), sig
+        );
 
         assertTrue(status);
 
@@ -127,7 +124,8 @@ contract AllowanceTest is Test {
         uint256 expiry = block.timestamp + 100;
         uint256 moduleNonce = allowanceModule.sigNonce();
 
-        (bytes32 moduleTransferHash, ) = allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
+        (bytes32 moduleTransferHash,) =
+            allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
 
         bytes memory sig;
 
@@ -137,7 +135,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Get the token balance of Token Recipient before transfer by Module.
@@ -168,7 +166,8 @@ contract AllowanceTest is Test {
         uint256 expiry = block.timestamp + 100;
         uint256 moduleNonce = allowanceModule.sigNonce();
 
-        (bytes32 moduleTransferHash, ) = allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
+        (bytes32 moduleTransferHash,) =
+            allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
 
         bytes memory sig;
 
@@ -178,7 +177,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Initiate the transaction from Module.
@@ -211,7 +210,8 @@ contract AllowanceTest is Test {
         uint256 expiry = block.timestamp + 100;
         uint256 moduleNonce = allowanceModule.sigNonce();
 
-        (bytes32 moduleTransferHash, ) = allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
+        (bytes32 moduleTransferHash,) =
+            allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
 
         bytes memory sig;
 
@@ -220,7 +220,7 @@ contract AllowanceTest is Test {
             (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(secretWalletPk, moduleTransferHash);
 
             // Only one signature being used for a Safe Wallet with threshold of two.
-            sig = abi.encodePacked(r0,s0,v0);
+            sig = abi.encodePacked(r0, s0, v0);
         }
 
         // Initiate the transaction from Module.
@@ -253,7 +253,8 @@ contract AllowanceTest is Test {
         uint256 expiry = block.timestamp + 100;
         uint256 moduleNonce = allowanceModule.sigNonce();
 
-        (bytes32 moduleTransferHash, ) = allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
+        (bytes32 moduleTransferHash,) =
+            allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
 
         bytes memory sig;
 
@@ -263,7 +264,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet. Somehow Token Hacker hacked the Hot wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Initiate the transaction from Module.
@@ -301,9 +302,21 @@ contract AllowanceTest is Test {
 
         // Module Transfer Hash created with new token address.
         uint256 chainId = allowanceModule.getChainId();
-        bytes32 domainSeparator = keccak256(abi.encode(allowanceModule.DOMAIN_SEPARATOR_TYPEHASH(), chainId, address(safe)));
-        bytes32 transferHash = keccak256(abi.encode(allowanceModule.ALLOWANCE_MODULE_TYPEHASH(), address(safe), address(newErc20), tokenRecipient, amountTransferrable, expiry, moduleNonce));
-        bytes32 moduleTransferHash = keccak256(abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, transferHash));
+        bytes32 domainSeparator =
+            keccak256(abi.encode(allowanceModule.DOMAIN_SEPARATOR_TYPEHASH(), chainId, address(safe)));
+        bytes32 transferHash = keccak256(
+            abi.encode(
+                allowanceModule.ALLOWANCE_MODULE_TYPEHASH(),
+                address(safe),
+                address(newErc20),
+                tokenRecipient,
+                amountTransferrable,
+                expiry,
+                moduleNonce
+            )
+        );
+        bytes32 moduleTransferHash =
+            keccak256(abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, transferHash));
 
         bytes memory sig;
 
@@ -313,7 +326,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Initiate the transaction from Module.
@@ -325,7 +338,9 @@ contract AllowanceTest is Test {
         vm.startPrank(coldWallet);
 
         // Setting up a new safe wallet.
-        bytes memory setupData = abi.encodeWithSelector(Safe.setup.selector, owners, threshold, address(0), "0x", address(0), address(0), 0, payable(address(0)));
+        bytes memory setupData = abi.encodeWithSelector(
+            Safe.setup.selector, owners, threshold, address(0), "0x", address(0), address(0), 0, payable(address(0))
+        );
 
         salt++;
         SafeL2 newSafe = SafeL2(payable(safeProxyFactory.createProxyWithNonce(singleton, setupData, salt)));
@@ -354,9 +369,21 @@ contract AllowanceTest is Test {
 
         // Module Transfer Hash created with new Safe address.
         uint256 chainId = allowanceModule.getChainId();
-        bytes32 domainSeparator = keccak256(abi.encode(allowanceModule.DOMAIN_SEPARATOR_TYPEHASH(), chainId, address(newSafe)));
-        bytes32 transferHash = keccak256(abi.encode(allowanceModule.ALLOWANCE_MODULE_TYPEHASH(), address(newSafe), address(erc20), tokenRecipient, amountTransferrable, expiry, moduleNonce));
-        bytes32 moduleTransferHash = keccak256(abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, transferHash));
+        bytes32 domainSeparator =
+            keccak256(abi.encode(allowanceModule.DOMAIN_SEPARATOR_TYPEHASH(), chainId, address(newSafe)));
+        bytes32 transferHash = keccak256(
+            abi.encode(
+                allowanceModule.ALLOWANCE_MODULE_TYPEHASH(),
+                address(newSafe),
+                address(erc20),
+                tokenRecipient,
+                amountTransferrable,
+                expiry,
+                moduleNonce
+            )
+        );
+        bytes32 moduleTransferHash =
+            keccak256(abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator, transferHash));
 
         bytes memory sig;
 
@@ -366,7 +393,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Initiate the transaction from Module.
@@ -399,7 +426,8 @@ contract AllowanceTest is Test {
         uint256 expiry = block.timestamp + 100;
         uint256 moduleNonce = allowanceModule.sigNonce();
 
-        (bytes32 moduleTransferHash, ) = allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
+        (bytes32 moduleTransferHash,) =
+            allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
 
         bytes memory sig;
 
@@ -409,7 +437,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Get the token balance of Token Recipient before transfer by Module.
@@ -460,7 +488,8 @@ contract AllowanceTest is Test {
         uint256 expiry = block.timestamp + 100;
         uint256 moduleNonce = allowanceModule.sigNonce();
 
-        (bytes32 moduleTransferHash, ) = allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
+        (bytes32 moduleTransferHash,) =
+            allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
 
         bytes memory sig;
 
@@ -470,7 +499,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Initiate the transaction from Module with wrong beneficiary address.
@@ -503,7 +532,8 @@ contract AllowanceTest is Test {
         uint256 expiry = block.timestamp + 100;
         uint256 moduleNonce = allowanceModule.sigNonce();
 
-        (bytes32 moduleTransferHash, ) = allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
+        (bytes32 moduleTransferHash,) =
+            allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
 
         bytes memory sig;
 
@@ -513,7 +543,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Initiate the transaction from Module.
@@ -546,7 +576,8 @@ contract AllowanceTest is Test {
         uint256 expiry = block.timestamp + 100;
         uint256 moduleNonce = allowanceModule.sigNonce();
 
-        (bytes32 moduleTransferHash, ) = allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
+        (bytes32 moduleTransferHash,) =
+            allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
 
         bytes memory sig;
 
@@ -556,7 +587,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Initiate the transaction from Module.
@@ -589,7 +620,8 @@ contract AllowanceTest is Test {
         uint256 expiry = block.timestamp;
         uint256 moduleNonce = allowanceModule.sigNonce();
 
-        (bytes32 moduleTransferHash, ) = allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
+        (bytes32 moduleTransferHash,) =
+            allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
 
         bytes memory sig;
 
@@ -599,7 +631,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Initiate the transaction from Module.
@@ -632,7 +664,8 @@ contract AllowanceTest is Test {
         uint256 expiry = block.timestamp + 100;
         uint256 moduleNonce = allowanceModule.sigNonce();
 
-        (bytes32 moduleTransferHash, ) = allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
+        (bytes32 moduleTransferHash,) =
+            allowanceModule.generateTransferDataAndHash(tokenRecipient, amountTransferrable, expiry, moduleNonce);
 
         bytes memory sig;
 
@@ -642,7 +675,7 @@ contract AllowanceTest is Test {
 
             // Signing for Token Transfer by Hot Wallet.
             (uint8 v1, bytes32 r1, bytes32 s1) = vm.sign(hotWalletPk, moduleTransferHash);
-            sig = abi.encodePacked(r0,s0,v0,r1,s1,v1);
+            sig = abi.encodePacked(r0, s0, v0, r1, s1, v1);
         }
 
         // Get the token balance of Token Recipient before transfer by Module.
@@ -668,5 +701,4 @@ contract AllowanceTest is Test {
         // Check the token balance of Safe Wallet is correct.
         assertEq(swBalAfterTransfer, swBalAfterModuleTransfer + amountTransferrable);
     }
-
 }
